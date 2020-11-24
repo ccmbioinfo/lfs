@@ -23,6 +23,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton }
 import { Tooltip, Typography, withStyles } from "@material-ui/core";
 import { Delete, Close } from "@material-ui/icons";
 
+import DialogueLoginContainer, { fetchWithReLogin } from "../login/loginDialogue.js";
 import QuestionnaireStyle from "../questionnaire/QuestionnaireStyle.jsx";
 
 /**
@@ -39,6 +40,7 @@ function DeleteButton(props) {
   const [ deleteRecursive, setDeleteRecursive ] = useState(false);
   const [ entryNotFound, setEntryNotFound ] = useState(false);
   const [ deletionStatus, setDeletionStatus ] = useState(undefined);
+  const [ loginDialogShow, setLoginDialogShow ] = useState(false);
 
   const defaultDialogAction = `Are you sure you want to delete ${entryName}?`;
   const defaultErrorMessage = entryName + " could not be removed.";
@@ -113,23 +115,14 @@ function DeleteButton(props) {
   }
 
   let handleDeleteButtonClicked = () => {
-    if (deletionStatus === false) {
-      handleLogin();
-    } else {
+    if (deletionStatus !== false) {
       handleDelete();
     }
   }
 
-  let handleLogin = () => {
-    const width = 600;
-    const height = 800;
-    const top = window.top.outerHeight / 2 + window.top.screenY - (height / 2);
-    const left = window.top.outerWidth / 2 + window.top.screenX - (width / 2);
-    // After a successful log in, the login dialog code will "open" the specified resource, which results in executing the specified javascript code
-    window.open("/login.html?resource=javascript%3Awindow.close()", "loginPopup", `width=${width}, height=${height}, top=${top}, left=${left}`);
-    // Reset the dialog message and log in button
-    setDeletionStatus(undefined);
-    setDialogAction(defaultDialogAction);
+  let handleLogin = (success) => {
+    success && setDeletionStatus(undefined);
+    success && setLoginDialogShow(false);
   }
 
   let handleDelete = () => {
@@ -137,12 +130,13 @@ function DeleteButton(props) {
     if (deleteRecursive) {
       url.searchParams.set("recursive", true);
     }
-    fetch( url, {
+
+    fetchWithReLogin( url, {
       method: 'DELETE',
       headers: {
         Accept: "application/json"
       }
-    }).then((response) => {
+    }, setLoginDialogShow).then((response) => {
       if (response.ok)  {
         setDeletionStatus(true);
         closeDialog();
@@ -171,6 +165,7 @@ function DeleteButton(props) {
 
   return (
     <React.Fragment>
+      <DialogueLoginContainer isOpen={loginDialogShow} handleLogin={handleLogin}/>
       <Dialog open={errorOpen} onClose={closeError}>
         <DialogTitle disableTypography>
           <Typography variant="h6" color="error" className={classes.dialogTitle}>Error</Typography>
