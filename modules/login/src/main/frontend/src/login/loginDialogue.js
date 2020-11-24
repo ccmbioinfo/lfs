@@ -21,6 +21,23 @@ import { Dialog } from '@material-ui/core';
 
 import MainLoginComponent from './loginMainComponent';
 
+export function fetchWithReLogin(url, fetchArgs, setDisplayLogin) {
+    return new Promise(function(resolve, reject) {
+      fetch(url, fetchArgs)
+      .then((response) => {
+        if (response.status == 401) {
+            setDisplayLogin(true);
+        } else if (response.ok && response.url.startsWith(window.location.origin + "/login")) {
+            setDisplayLogin(true);
+        } else if (response.ok) {
+            resolve(response);
+        } else {
+            reject(response);
+        }
+      });
+    });
+}
+
 class DialogueLoginContainer extends React.Component {
   constructor(props) {
     super(props);
