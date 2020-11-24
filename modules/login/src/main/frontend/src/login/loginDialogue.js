@@ -34,7 +34,8 @@ export function fetchWithReLogin(url, fetchArgs, setDisplayLogin) {
         } else {
             reject(response);
         }
-      });
+      })
+      .catch((err) => {reject(err)});
     });
 }
 
