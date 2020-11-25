@@ -23,6 +23,7 @@ import PropTypes from "prop-types";
 import moment from "moment";
 import QuestionnaireStyle from "./QuestionnaireStyle.jsx";
 import NewFormDialog from "../dataHomepage/NewFormDialog";
+import DialogueLoginContainer, { fetchWithReLogin } from "../login/loginDialogue.js";
 
 import {
   CircularProgress,
@@ -122,6 +123,7 @@ function SubjectContainer(props) {
   // hold related subjects
   let [relatedSubjects, setRelatedSubjects] = useState();
   // 'level' of subject component
+  let [ fetchDataPending, setFetchDataPending ] = useState(false);
   const currentLevel = level || 0;
 
   // Fetch the subject's data as JSON from the server.
@@ -129,7 +131,7 @@ function SubjectContainer(props) {
   // such as authorship and versioning information.
   // Once the data arrives from the server, it will be stored in the `data` state variable.
   let fetchData = () => {
-    fetch(`/Subjects/${id}.deep.json`)
+    fetchWithReLogin(`/Subjects/${id}.deep.json`, { method: 'GET' }, setFetchDataPending)
       .then((response) => response.ok ? response.json() : Promise.reject(response))
       .then(handleResponse)
       .catch(handleError);
@@ -151,7 +153,7 @@ function SubjectContainer(props) {
   };
 
   // If the data has not yet been fetched, return an in-progress symbol
-  if (!data) {
+  if (!data && !fetchDataPending) {
     fetchData();
     return (
       <Grid container justify="center"><Grid item><CircularProgress/></Grid></Grid>
@@ -159,7 +161,7 @@ function SubjectContainer(props) {
   }
 
   // get related SubjectTypes
-  let check_url = createQueryURL(` WHERE n.'parents'='${data['jcr:uuid']}'`, "lfs:Subject");
+  let check_url = createQueryURL(` WHERE n.'parents'='${data?.['jcr:uuid']}'`, "lfs:Subject");
   let fetchRelated = () => {
     fetch(check_url)
     .then((response) => response.ok ? response.json() : Promise.reject(response))
@@ -167,8 +169,13 @@ function SubjectContainer(props) {
     .catch(handleError);
   }
 
-  if (!relatedSubjects) {
+  if (!relatedSubjects && !fetchDataPending) {
     fetchRelated();
+  }
+
+  let handleLogin = (success) => {
+    success && fetchDataPending && fetchData();
+    success && setFetchDataPending(false);
   }
 
   if (error) {
@@ -184,20 +191,25 @@ function SubjectContainer(props) {
   }
 
   return (
-    <Grid container spacing={3}>
-      <SubjectMember classes={classes} id={id} level={currentLevel} data={data} maxDisplayed={maxDisplayed}/>
-      {relatedSubjects ?
-        (<Grid item xs={12} className={classes.subjectContainer}>
-          {relatedSubjects.map( (subject, i) => {
-            // Render component again for each related subject
-            return(
-              <SubjectContainer key={i} classes={classes} id={subject["@name"]} level={currentLevel+1} maxDisplayed={maxDisplayed}/>
-            )
-          })}
-        </Grid>
-        ) : ""
-      }
-    </Grid>
+    <React.Fragment>
+      <DialogueLoginContainer isOpen={fetchDataPending} handleLogin={handleLogin}/>
+      <Grid container spacing={3}>
+        { data &&
+        <SubjectMember classes={classes} id={id} level={currentLevel} data={data} maxDisplayed={maxDisplayed}/>
+        }
+        {relatedSubjects ?
+          (<Grid item xs={12} className={classes.subjectContainer}>
+            {relatedSubjects.map( (subject, i) => {
+              // Render component again for each related subject
+              return(
+                <SubjectContainer key={i} classes={classes} id={subject["@name"]} level={currentLevel+1} maxDisplayed={maxDisplayed}/>
+              )
+            })}
+          </Grid>
+          ) : ""
+        }
+      </Grid>
+    </React.Fragment>
   );
 }
 
