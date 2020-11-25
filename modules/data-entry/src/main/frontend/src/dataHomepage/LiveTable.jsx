@@ -25,6 +25,7 @@ import moment from "moment";
 
 import Filters from "./Filters.jsx";
 import { getEntityIdentifier } from "../themePage/EntityIdentifier.jsx";
+import DialogueLoginContainer, { fetchWithReLogin } from "../login/loginDialogue.js";
 
 import LiveTableStyle from "./tableStyle.jsx";
 
@@ -42,9 +43,10 @@ function LiveTable(props) {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Define the component's state
 
-  const { customUrl, columns, defaultLimit, joinChildren, updateData, classes, filters, entryType, actions, admin, ...rest } = props;
+  const { customUrl, columns, defaultLimit, disableReLogin, joinChildren, updateData, classes, filters, entryType, actions, admin, ...rest } = props;
   const [tableData, setTableData] = useState();
   const [cachedFilters, setCachedFilters] = useState(null);
+  const [fetchDataPending, setFetchDataPending] = useState(false);
   const [paginationData, setPaginationData] = useState(
     {
       "offset": 0,
@@ -118,7 +120,7 @@ function LiveTable(props) {
       filters["empties"].forEach((value) => {url.searchParams.append("filterempty", value)});
       filters["notempties"].forEach((value) => {url.searchParams.append("filternotempty", value)});
     }
-    let currentFetch = fetch(url);
+    let currentFetch = fetchWithReLogin(url, { method: 'GET' }, setFetchDataPending);
     setFetchStatus(Object.assign({}, fetchStatus, {
       "currentFetch": currentFetch,
       "fetchError": false,
@@ -320,6 +322,11 @@ function LiveTable(props) {
     fetchData(paginationData);
   }
 
+  let handleLogin = (success) => {
+    success && fetchDataPending && fetchData(paginationData);
+    success && setFetchDataPending(false);
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // The rendering code
 
@@ -340,63 +347,68 @@ function LiveTable(props) {
   )
 
   return (
-    // We wrap everything in a Paper for a nice separation, as a Table has no background or border of its own.
-    <Paper elevation={0}>
-      {filters && <Filters onChangeFilters={handleChangeFilters} disabled={!Boolean(tableData)} {...rest} />}
-      <div>
-        {paginationControls}
-      </div>
+    <React.Fragment>
+      <DialogueLoginContainer isOpen={!disableReLogin && fetchDataPending} handleLogin={handleLogin}/>
       {/*
-      // stickyHeader doesn't really work right now, since the Paper just extends all the way down to fit the table.
-      // The whole UI needs to be redesigned so that we can set a maximum height to the Paper,
-      // which would make the table scroll internally.
-      // <Table stickyHeader>
+      // We wrap everything in a Paper for a nice separation, as a Table has no background or border of its own.
       */}
-      <Table>
-        {/* TODO: Also add pagination controls at the top? Or maybe the UI redesign mentioned above will fix the problem. */}
-        <TableHead>
-          {/* TODO: Move the whole header in a separate, smarter component that can do filtering and sorting. */}
-          <TableRow>
-          { columns ?
-            (
-              columns.map((column, index) => <TableCell key={index} className={classes.tableHeader} {...column.props}>{column.label}</TableCell>)
-            )
-          :
-            (
-              <TableCell>Name</TableCell>
-            )
-          }
-          {actions ? <TableCell key={columns ? columns.count : 1} className={[classes.tableHeader, classes.tableActionsHeader].join(' ')}>Actions</TableCell> : null}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          { fetchStatus.fetchError ?
-            (
-              <TableRow>
-                <TableCell colSpan={columns ? columns.length : 1}>
-                  <Card>
-                    <CardHeader title="Error"/>
-                    <CardContent>
-                      <Typography>{fetchStatus.fetchError}</Typography>
-                    </CardContent>
-                    <CardActions>
-                      <Button onClick={() => fetchData(paginationData)}>Retry</Button>
-                    </CardActions>
-                  </Card>
-                </TableCell>
-              </TableRow>
-            )
+      <Paper elevation={0}>
+        {filters && <Filters onChangeFilters={handleChangeFilters} disabled={!Boolean(tableData)} {...rest} />}
+        <div>
+          {paginationControls}
+        </div>
+        {/*
+        // stickyHeader doesn't really work right now, since the Paper just extends all the way down to fit the table.
+        // The whole UI needs to be redesigned so that we can set a maximum height to the Paper,
+        // which would make the table scroll internally.
+        // <Table stickyHeader>
+        */}
+        <Table>
+          {/* TODO: Also add pagination controls at the top? Or maybe the UI redesign mentioned above will fix the problem. */}
+          <TableHead>
+            {/* TODO: Move the whole header in a separate, smarter component that can do filtering and sorting. */}
+            <TableRow>
+            { columns ?
+              (
+                columns.map((column, index) => <TableCell key={index} className={classes.tableHeader} {...column.props}>{column.label}</TableCell>)
+              )
             :
-            tableData ?
-              ( tableData.map(makeRow) )
+              (
+                <TableCell>Name</TableCell>
+              )
+            }
+            {actions ? <TableCell key={columns ? columns.count : 1} className={[classes.tableHeader, classes.tableActionsHeader].join(' ')}>Actions</TableCell> : null}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            { fetchStatus.fetchError ?
+              (
+                <TableRow>
+                  <TableCell colSpan={columns ? columns.length : 1}>
+                    <Card>
+                      <CardHeader title="Error"/>
+                      <CardContent>
+                        <Typography>{fetchStatus.fetchError}</Typography>
+                      </CardContent>
+                      <CardActions>
+                        <Button onClick={() => fetchData(paginationData)}>Retry</Button>
+                      </CardActions>
+                    </Card>
+                  </TableCell>
+                </TableRow>
+              )
               :
-              ( <TableRow><TableCell colSpan={columns ? columns.length : 1}>Please wait...</TableCell></TableRow> )
-          }
-        </TableBody>
-      </Table>
-      {paginationControls}
-      {!tableData && (<LinearProgress className={classes.progressIndicator}/>)}
-    </Paper>
+              tableData ?
+                ( tableData.map(makeRow) )
+                :
+                ( <TableRow><TableCell colSpan={columns ? columns.length : 1}>Please wait...</TableCell></TableRow> )
+            }
+          </TableBody>
+        </Table>
+        {paginationControls}
+        {!tableData && (<LinearProgress className={classes.progressIndicator}/>)}
+      </Paper>
+    </React.Fragment>
   );
 }
 
