@@ -16,10 +16,12 @@
 //  specific language governing permissions and limitations
 //  under the License.
 //
-import React from 'react';
+import React, { useContext } from 'react';
 import { Dialog } from '@material-ui/core';
 
 import MainLoginComponent from './loginMainComponent';
+
+export const GlobalLoginContext = React.createContext();
 
 export function fetchWithReLogin(url, fetchArgs, setDisplayLogin) {
     return new Promise(function(resolve, reject) {

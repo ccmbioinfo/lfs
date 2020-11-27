@@ -17,7 +17,7 @@
 //  under the License.
 //
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import PropTypes from "prop-types";
 
 import {
@@ -41,7 +41,7 @@ import moment from "moment";
 import { getHierarchy } from "./Subject";
 import { SelectorDialog, parseToArray } from "./SubjectSelector";
 import { FormProvider } from "./FormContext";
-import DialogueLoginContainer, { fetchWithReLogin } from "../login/loginDialogue.js";
+import { fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
 import DeleteButton from "../dataHomepage/DeleteButton";
 import FormPagination from "./FormPagination";
 
@@ -98,6 +98,8 @@ function Form (props) {
 
   let formNode = React.useRef();
 
+  let globalLoginDisplay = useContext(GlobalLoginContext);
+
   // Fetch the form's data as JSON from the server.
   // The data will contain the form metadata,
   // such as authorship and versioning information, the associated subject,
@@ -105,7 +107,12 @@ function Form (props) {
   // and all the existing answers.
   // Once the data arrives from the server, it will be stored in the `data` state variable.
   let fetchData = () => {
-    fetchWithReLogin(`/Forms/${id}.deep.json`, { method: 'GET' }, setFetchDataPending)
+    globalLoginDisplay.setLoginHandler((success) => {
+      success && globalLoginDisplay.dialogClose();
+      success && fetchData();
+    });
+
+    fetchWithReLogin(`/Forms/${id}.deep.json`, { method: 'GET' }, globalLoginDisplay.dialogOpen)
       .then((response) => response.ok ? response.json() : Promise.reject(response))
       .then(handleResponse)
       .catch(handleFetchError);
@@ -116,6 +123,7 @@ function Form (props) {
     setData(json);
     setPaginationEnabled(!!json?.['questionnaire']?.['paginate']);
     setPages([]);
+    globalLoginDisplay.clearLoginHandler();
   };
 
   // Callback method for the `fetchData` method, invoked when the request failed.
@@ -130,6 +138,12 @@ function Form (props) {
     event && event.preventDefault();
 
     setSaveInProgress(true);
+
+    globalLoginDisplay.setLoginHandler((success) => {
+      success && globalLoginDisplay.dialogClose();
+      success && saveData();
+    });
+
     // currentTarget is the element on which the event listener was placed and invoked, thus the <form> element
     let data = new FormData(event ? event.currentTarget : formNode.current);
     fetchWithReLogin(`/Forms/${id}`, {
@@ -140,7 +154,8 @@ function Form (props) {
         Authorization: "Basic " + btoa(":")
       }
     },
-    setSaveDataPending).then((response) => {
+    globalLoginDisplay.dialogOpen).then((response) => {
+      globalLoginDisplay.clearLoginHandler();
       if (response.ok) {
         setLastSaveStatus(true);
       } else if (response.status === 500) {
@@ -161,13 +176,6 @@ function Form (props) {
       }
       })
       .finally(() => setSaveInProgress(false));
-  }
-
-  let handleLogin = (success) => {
-    success && fetchDataPending && fetchData();
-    success && saveDataPending && saveData();
-    success && setFetchDataPending(false);
-    success && setSaveDataPending(false);
   }
 
   // Handle when the subject of the form changes
@@ -205,7 +213,7 @@ function Form (props) {
 
   // If the data has not yet been fetched, return an in-progress symbol,
   // unless we are prompting for login credentials
-  if (!data && !fetchDataPending && !saveDataPending) {
+  if (!data) {
     fetchData();
     return (
       <Grid container justify="center"><Grid item><CircularProgress/></Grid></Grid>
@@ -284,7 +292,6 @@ function Form (props) {
 
   return (
      <React.Fragment>
-       <DialogueLoginContainer isOpen={fetchDataPending || saveDataPending} handleLogin={handleLogin}/>
        <form action={data?.["@path"]} method="POST" onSubmit={handleSubmit} onChange={()=>setLastSaveStatus(undefined)} key={id} ref={formNode}>
         <Grid container {...FORM_ENTRY_CONTAINER_PROPS} >
           <Grid item className={classes.formHeader} xs={12}>

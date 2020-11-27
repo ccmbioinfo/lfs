@@ -27,6 +27,7 @@ import { createBrowserHistory } from "history";
 import Navbar from "./Navbars/Navbar";
 import PageStart from "./PageStart/PageStart";
 import IndexStyle from "./indexStyle.jsx";
+import DialogueLoginContainer, { GlobalLoginContext } from "../login/loginDialogue.js";
 
 class Main extends React.Component {
   constructor(props) {
@@ -40,6 +41,8 @@ class Main extends React.Component {
       mobileOpen: false,
       routes: [],
       contentOffset: 0,
+      loginDialogOpen: false,
+      loginHandler: undefined,
     };
 
     getRoutes().then(routes => this.setState({routes: routes}));
@@ -91,6 +94,29 @@ class Main extends React.Component {
 
     return (
       <React.Fragment>
+      <GlobalLoginContext.Provider
+        value={{
+          dialogOpen: () => {
+            (!this.state.loginDialogOpen) && this.setState({ loginDialogOpen: true });
+          },
+          dialogClose: () => {
+            this.state.loginDialogOpen && this.setState({
+              loginDialogOpen: false,
+              loginHandler: undefined
+            });
+          },
+          setLoginHandler: (handler) => {
+            if (!this.state.loginHandler) {
+              this.setState({ loginHandler: handler });
+            }
+          },
+          clearLoginHandler: () => {
+            if (this.state.loginHandler) {
+              this.setState({ loginHandler: undefined });
+            }
+          }
+        }}
+      >
         <PageStart
           setTotalHeight={(th) => {
               if (this.state.contentOffset != th) {
@@ -99,6 +125,7 @@ class Main extends React.Component {
             }
           }
         />
+        <DialogueLoginContainer isOpen={this.state.loginDialogOpen} handleLogin={this.state.loginHandler}/>
         <div className={classes.wrapper} style={ { position: 'relative', top: this.state.contentOffset + 'px' } }>
           <Suspense fallback={<div>Loading...</div>}>
             <Sidebar
@@ -123,6 +150,7 @@ class Main extends React.Component {
             </div>
           </Suspense>
         </div>
+      </GlobalLoginContext.Provider>
       </React.Fragment>
     );
   }
