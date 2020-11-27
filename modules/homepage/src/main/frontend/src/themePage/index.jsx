@@ -92,6 +92,7 @@ class Main extends React.Component {
 
     return (
       <React.Fragment>
+      <GlobalLoginContext.Provider value={"Hello world"}>
         <PageStart
           setTotalHeight={(th) => {
               if (this.state.contentOffset != th) {
@@ -124,6 +125,7 @@ class Main extends React.Component {
             </div>
           </Suspense>
         </div>
+      </GlobalLoginContext.Provider>
       </React.Fragment>
     );
   }
