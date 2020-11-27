@@ -32,6 +32,7 @@ class Main extends React.Component {
   constructor(props) {
     super(props);
 
+    this.globalLoginContext = React.createContext();
     this.state = {
       image: "/libs/lfs/resources/cancer-cells.jpg",
       color: "blue",
@@ -88,7 +89,7 @@ class Main extends React.Component {
 
   render() {
     const { classes, ...rest } = this.props;
-    const GlobalLoginContext = React.createContext();
+    let GlobalLoginContext = this.globalLoginContext;
 
     return (
       <React.Fragment>
