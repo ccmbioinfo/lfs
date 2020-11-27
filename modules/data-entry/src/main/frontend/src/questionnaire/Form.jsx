@@ -130,7 +130,7 @@ function Form (props) {
 
     // If the previous save attempt failed, instead of trying to save again, open a login popup
     if (lastSaveStatus === false) {
-      loginToSave();
+      loginToSave(event);
       return;
     }
 
@@ -167,14 +167,17 @@ function Form (props) {
   }
 
   // Open the login page in a new popup window, centered wrt the parent window
-  let loginToSave = () => {
+  let loginToSave = (event) => {
     setLastSaveStatus(undefined);
-    setLoginDialogShow(true);
+    //setLoginDialogShow(true);
+    window.setDisplayLoginModal(true, saveData, event);
   }
 
   let handleLogin = (success) => {
-    success && setLoginDialogShow(false);
-    success && saveData();
+    //success && setLoginDialogShow(false);
+    //success && window.setDisplayLoginModal(false, false);
+    //success && saveData();
+    console.log("handleLogin is staged to be removed");
   }
 
   // Handle when the subject of the form changes
