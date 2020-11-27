@@ -28,8 +28,6 @@ import Navbar from "./Navbars/Navbar";
 import PageStart from "./PageStart/PageStart";
 import IndexStyle from "./indexStyle.jsx";
 
-import DialogueLoginContainer from "../login/loginDialogue.js";
-
 class Main extends React.Component {
   constructor(props) {
     super(props);
@@ -42,9 +40,6 @@ class Main extends React.Component {
       mobileOpen: false,
       routes: [],
       contentOffset: 0,
-      loginModalDisplayed: false,
-      loginModalPendingCallback: false,
-      loginModalCallbackEvent: false
     };
 
     getRoutes().then(routes => this.setState({routes: routes}));
@@ -95,17 +90,8 @@ class Main extends React.Component {
     const { classes, ...rest } = this.props;
     const GlobalLoginContext = React.createContext();
 
-    window.setDisplayLoginModal = (displayState, pendingCallback, event) => {
-      this.setState({
-        loginModalDisplayed: displayState,
-        loginModalPendingCallback: pendingCallback,
-        loginModalCallbackEvent: event
-      });
-    };
-
     return (
       <React.Fragment>
-        <DialogueLoginContainer isOpen={this.state.loginModalDisplayed} handleLogin={(success) => { console.log("In handleLogin()"); success && this.setState({ loginModalDisplayed: false }); success && this.state.loginModalPendingCallback(this.state.loginModalCallbackEvent) }}/>
         <PageStart
           setTotalHeight={(th) => {
               if (this.state.contentOffset != th) {
