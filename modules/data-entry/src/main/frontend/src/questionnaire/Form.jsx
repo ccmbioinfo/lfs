@@ -41,7 +41,7 @@ import moment from "moment";
 import { getHierarchy } from "./Subject";
 import { SelectorDialog, parseToArray } from "./SubjectSelector";
 import { FormProvider } from "./FormContext";
-import DialogueLoginContainer from "../login/loginDialogue.js";
+import DialogueLoginContainer, { GlobalLoginContext } from "../login/loginDialogue.js";
 import DeleteButton from "../dataHomepage/DeleteButton";
 import FormPagination from "./FormPagination";
 
@@ -315,6 +315,13 @@ function Form (props) {
             : ""
           }
         </Grid>
+        <GlobalLoginContext.Consumer>
+        { (msg) => {
+            console.log("Form.jsx GlobalLoginContext.Consumer");
+            console.log(msg);
+          }
+        }
+        </GlobalLoginContext.Consumer>
         <FormProvider>
           <SelectorDialog
             allowedTypes={parseToArray(data?.['questionnaire']?.['requiredSubjectTypes'])}

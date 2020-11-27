@@ -27,6 +27,7 @@ import { createBrowserHistory } from "history";
 import Navbar from "./Navbars/Navbar";
 import PageStart from "./PageStart/PageStart";
 import IndexStyle from "./indexStyle.jsx";
+import DialogueLoginContainer, { GlobalLoginContext } from "../login/loginDialogue.js";
 
 class Main extends React.Component {
   constructor(props) {
@@ -88,11 +89,9 @@ class Main extends React.Component {
 
   render() {
     const { classes, ...rest } = this.props;
-    const GlobalLoginContext = React.createContext();
 
     return (
       <React.Fragment>
-      <GlobalLoginContext.Provider value={"Hello world"}>
         <PageStart
           setTotalHeight={(th) => {
               if (this.state.contentOffset != th) {
@@ -125,7 +124,6 @@ class Main extends React.Component {
             </div>
           </Suspense>
         </div>
-      </GlobalLoginContext.Provider>
       </React.Fragment>
     );
   }
@@ -138,13 +136,15 @@ const MainComponent = (withStyles(IndexStyle, {withTheme: true})(Main));
 
 const hist = createBrowserHistory();
 ReactDOM.render(
+  <GlobalLoginContext.Provider value={"Hello world"}>
   <Router history={hist}>
     <Switch>
       <Route path="/content.html/" component={MainComponent} />
       <Redirect from="/" to="/content.html/Questionnaires/User"/>
       <Redirect from="/content" to="/content.html/Questionnaires/User" />
     </Switch>
-  </Router>,
+  </Router>
+  </GlobalLoginContext.Provider>,
   document.querySelector('#main-container')
 );
 

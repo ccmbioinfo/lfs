@@ -21,6 +21,8 @@ import { Dialog } from '@material-ui/core';
 
 import MainLoginComponent from './loginMainComponent';
 
+export const GlobalLoginContext = React.createContext();
+
 class DialogueLoginContainer extends React.Component {
   constructor(props) {
     super(props);
