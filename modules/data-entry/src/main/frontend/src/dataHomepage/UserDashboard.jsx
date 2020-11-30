@@ -16,7 +16,7 @@
 //  specific language governing permissions and limitations
 //  under the License.
 //
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import LiveTable from "./LiveTable.jsx";
 
 import QuestionnaireStyle from "../questionnaire/QuestionnaireStyle.jsx";
@@ -25,7 +25,7 @@ import { Button, Card, CardContent, CardHeader, Grid, Link, Typography, withStyl
 import NewFormDialog from "./NewFormDialog.jsx";
 import DeleteButton from "./DeleteButton.jsx";
 import { getEntityIdentifier } from "../themePage/EntityIdentifier.jsx";
-import DialogueLoginContainer, { fetchWithReLogin } from "../login/loginDialogue.js";
+import { fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
 
 // Component that renders the user's dashboard, with one LiveTable per questionnaire
 // visible by the user. Each LiveTable contains all forms that use the given
@@ -36,9 +36,10 @@ function UserDashboard(props) {
   // initialized
   let [questionnaires, setQuestionnaires] = useState([]);
   let [initialized, setInitialized] = useState(false);
-  let [initializePending, setInitializePending] = useState(false);
   // Error message set when fetching the data from the server fails
   let [ error, setError ] = useState();
+
+  let globalLoginDisplay = useContext(GlobalLoginContext);
 
   // Column configuration for the LiveTables
   const columns = [
@@ -63,19 +64,20 @@ function UserDashboard(props) {
     DeleteButton
   ]
 
-  let handleLogin = (success) => {
-    success && initializePending && initialize();
-    success && setInitializePending(false);
-  }
-
   // Obtain information about the questionnaires available to the user
   let initialize = () => {
     setInitialized(true);
 
+    globalLoginDisplay.setLoginHandler((success) => {
+      success && globalLoginDisplay.dialogClose();
+      success && initialize();
+    });
+
     // Fetch the questionnaires
-    fetchWithReLogin("/query?query=select * from [lfs:Questionnaire]", {method: 'GET'}, setInitializePending)
+    fetchWithReLogin("/query?query=select * from [lfs:Questionnaire]", {method: 'GET'}, globalLoginDisplay.dialogOpen)
       .then((response) => response.ok ? response.json() : Promise.reject(response))
       .then((response) => {
+        globalLoginDisplay.clearLoginHandler();
         if (response.totalrows == 0) {
           setError("Access to data is pending the approval of your account");
         }
@@ -109,7 +111,6 @@ function UserDashboard(props) {
 
   return (
     <React.Fragment>
-      <DialogueLoginContainer isOpen={initializePending} handleLogin={handleLogin}/>
       <Grid container spacing={3}>
         { questionnaires && questionnaires.length > 0 &&
         <Grid item lg={12} xl={6}>
