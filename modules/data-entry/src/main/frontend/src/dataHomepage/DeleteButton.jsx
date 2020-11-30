@@ -16,14 +16,14 @@
 //  specific language governing permissions and limitations
 //  under the License.
 //
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { withRouter, useHistory } from "react-router-dom";
 
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from "@material-ui/core";
 import { Tooltip, Typography, withStyles } from "@material-ui/core";
 import { Delete, Close } from "@material-ui/icons";
 
-import DialogueLoginContainer, { fetchWithReLogin } from "../login/loginDialogue.js";
+import { fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
 import QuestionnaireStyle from "../questionnaire/QuestionnaireStyle.jsx";
 
 /**
@@ -40,7 +40,8 @@ function DeleteButton(props) {
   const [ deleteRecursive, setDeleteRecursive ] = useState(false);
   const [ entryNotFound, setEntryNotFound ] = useState(false);
   const [ deletionStatus, setDeletionStatus ] = useState(undefined);
-  const [ loginDialogShow, setLoginDialogShow ] = useState(false);
+
+  const globalLoginDisplay = useContext(GlobalLoginContext);
 
   const defaultDialogAction = `Are you sure you want to delete ${entryName}?`;
   const defaultErrorMessage = entryName + " could not be removed.";
@@ -120,23 +121,24 @@ function DeleteButton(props) {
     }
   }
 
-  let handleLogin = (success) => {
-    success && setDeletionStatus(undefined);
-    success && setLoginDialogShow(false);
-  }
-
   let handleDelete = () => {
     let url = new URL(entryPath, window.location.origin);
     if (deleteRecursive) {
       url.searchParams.set("recursive", true);
     }
 
+    globalLoginDisplay.setLoginHandler((success) => {
+      success && globalLoginDisplay.dialogClose();
+      success && handleDelete();
+    });
+
     fetchWithReLogin( url, {
       method: 'DELETE',
       headers: {
         Accept: "application/json"
       }
-    }, setLoginDialogShow).then((response) => {
+    }, globalLoginDisplay.dialogOpen).then((response) => {
+      globalLoginDisplay.clearLoginHandler();
       if (response.ok)  {
         setDeletionStatus(true);
         closeDialog();
@@ -165,7 +167,6 @@ function DeleteButton(props) {
 
   return (
     <React.Fragment>
-      <DialogueLoginContainer isOpen={loginDialogShow} handleLogin={handleLogin}/>
       <Dialog open={errorOpen} onClose={closeError}>
         <DialogTitle disableTypography>
           <Typography variant="h6" color="error" className={classes.dialogTitle}>Error</Typography>
