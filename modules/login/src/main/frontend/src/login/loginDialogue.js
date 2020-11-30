@@ -28,9 +28,9 @@ export function fetchWithReLogin(url, fetchArgs, setDisplayLogin) {
       fetch(url, fetchArgs)
       .then((response) => {
         if (response.status == 401) {
-            setDisplayLogin(true);
+            setDisplayLogin.dialogOpen();
         } else if (response.ok && response.url.startsWith(window.location.origin + "/login")) {
-            setDisplayLogin(true);
+            setDisplayLogin.dialogOpen();
         } else if (response.ok) {
             resolve(response);
         } else {

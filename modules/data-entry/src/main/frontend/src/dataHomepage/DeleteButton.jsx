@@ -137,7 +137,7 @@ function DeleteButton(props) {
       headers: {
         Accept: "application/json"
       }
-    }, globalLoginDisplay.dialogOpen).then((response) => {
+    }, globalLoginDisplay).then((response) => {
       globalLoginDisplay.clearLoginHandler();
       if (response.ok)  {
         setDeletionStatus(true);

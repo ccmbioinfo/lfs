@@ -112,7 +112,7 @@ function Form (props) {
       success && fetchData();
     });
 
-    fetchWithReLogin(`/Forms/${id}.deep.json`, { method: 'GET' }, globalLoginDisplay.dialogOpen)
+    fetchWithReLogin(`/Forms/${id}.deep.json`, { method: 'GET' }, globalLoginDisplay)
       .then((response) => response.ok ? response.json() : Promise.reject(response))
       .then(handleResponse)
       .catch(handleFetchError);
@@ -154,7 +154,7 @@ function Form (props) {
         Authorization: "Basic " + btoa(":")
       }
     },
-    globalLoginDisplay.dialogOpen).then((response) => {
+    globalLoginDisplay).then((response) => {
       globalLoginDisplay.clearLoginHandler();
       if (response.ok) {
         setLastSaveStatus(true);

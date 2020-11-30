@@ -74,7 +74,7 @@ function UserDashboard(props) {
     });
 
     // Fetch the questionnaires
-    fetchWithReLogin("/query?query=select * from [lfs:Questionnaire]", {method: 'GET'}, globalLoginDisplay.dialogOpen)
+    fetchWithReLogin("/query?query=select * from [lfs:Questionnaire]", {method: 'GET'}, globalLoginDisplay)
       .then((response) => response.ok ? response.json() : Promise.reject(response))
       .then((response) => {
         globalLoginDisplay.clearLoginHandler();

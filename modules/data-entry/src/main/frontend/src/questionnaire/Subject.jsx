@@ -138,7 +138,7 @@ function SubjectContainer(props) {
       success && fetchData();
     });
 
-    fetchWithReLogin(`/Subjects/${id}.deep.json`, { method: 'GET' }, globalLoginDisplay.dialogOpen)
+    fetchWithReLogin(`/Subjects/${id}.deep.json`, { method: 'GET' }, globalLoginDisplay)
       .then((response) => response.ok ? response.json() : Promise.reject(response))
       .then(handleResponse)
       .catch(handleError);

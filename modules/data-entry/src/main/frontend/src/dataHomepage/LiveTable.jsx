@@ -127,7 +127,7 @@ function LiveTable(props) {
       filters["empties"].forEach((value) => {url.searchParams.append("filterempty", value)});
       filters["notempties"].forEach((value) => {url.searchParams.append("filternotempty", value)});
     }
-    let currentFetch = fetchWithReLogin(url, { method: 'GET' }, globalLoginDisplay.dialogOpen);
+    let currentFetch = fetchWithReLogin(url, { method: 'GET' }, globalLoginDisplay);
     setFetchStatus(Object.assign({}, fetchStatus, {
       "currentFetch": currentFetch,
       "fetchError": false,
