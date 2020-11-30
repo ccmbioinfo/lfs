@@ -17,13 +17,13 @@
 //  under the License.
 //
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link } from 'react-router-dom';
 import PropTypes from "prop-types";
 import moment from "moment";
 import QuestionnaireStyle from "./QuestionnaireStyle.jsx";
 import NewFormDialog from "../dataHomepage/NewFormDialog";
-import DialogueLoginContainer, { fetchWithReLogin } from "../login/loginDialogue.js";
+import { fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
 
 import {
   CircularProgress,
@@ -122,8 +122,10 @@ function SubjectContainer(props) {
   let [ error, setError ] = useState();
   // hold related subjects
   let [relatedSubjects, setRelatedSubjects] = useState();
+
+  let globalLoginDisplay = useContext(GlobalLoginContext);
+
   // 'level' of subject component
-  let [ fetchDataPending, setFetchDataPending ] = useState(false);
   const currentLevel = level || 0;
 
   // Fetch the subject's data as JSON from the server.
@@ -131,7 +133,12 @@ function SubjectContainer(props) {
   // such as authorship and versioning information.
   // Once the data arrives from the server, it will be stored in the `data` state variable.
   let fetchData = () => {
-    fetchWithReLogin(`/Subjects/${id}.deep.json`, { method: 'GET' }, setFetchDataPending)
+    globalLoginDisplay.setLoginHandler((success) => {
+      success && globalLoginDisplay.dialogClose();
+      success && fetchData();
+    });
+
+    fetchWithReLogin(`/Subjects/${id}.deep.json`, { method: 'GET' }, globalLoginDisplay.dialogOpen)
       .then((response) => response.ok ? response.json() : Promise.reject(response))
       .then(handleResponse)
       .catch(handleError);
@@ -139,6 +146,7 @@ function SubjectContainer(props) {
 
   // Callback method for the `fetchData` method, invoked when the data successfully arrived from the server.
   let handleResponse = (json) => {
+    globalLoginDisplay.clearLoginHandler();
     if (currentLevel == 0) {
       // sends the data to the parent component
       getSubject(json);
@@ -153,7 +161,7 @@ function SubjectContainer(props) {
   };
 
   // If the data has not yet been fetched, return an in-progress symbol
-  if (!data && !fetchDataPending) {
+  if (!data) {
     fetchData();
     return (
       <Grid container justify="center"><Grid item><CircularProgress/></Grid></Grid>
@@ -169,13 +177,8 @@ function SubjectContainer(props) {
     .catch(handleError);
   }
 
-  if (!relatedSubjects && !fetchDataPending) {
+  if (!relatedSubjects) {
     fetchRelated();
-  }
-
-  let handleLogin = (success) => {
-    success && fetchDataPending && fetchData();
-    success && setFetchDataPending(false);
   }
 
   if (error) {
@@ -192,7 +195,6 @@ function SubjectContainer(props) {
 
   return (
     <React.Fragment>
-      <DialogueLoginContainer isOpen={fetchDataPending} handleLogin={handleLogin}/>
       <Grid container spacing={3}>
         { data &&
         <SubjectMember classes={classes} id={id} level={currentLevel} data={data} maxDisplayed={maxDisplayed}/>
