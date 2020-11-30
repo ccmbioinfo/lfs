@@ -17,7 +17,7 @@
 //  under the License.
 //
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Paper, Table, TableHead, TableBody, TableRow, TableCell, TablePagination } from "@material-ui/core";
 import { Card, CardHeader, CardContent, CardActions, Chip, IconButton, Typography, Button, LinearProgress, withStyles } from "@material-ui/core";
 import { Link } from 'react-router-dom';
@@ -25,7 +25,7 @@ import moment from "moment";
 
 import Filters from "./Filters.jsx";
 import { getEntityIdentifier } from "../themePage/EntityIdentifier.jsx";
-import DialogueLoginContainer, { fetchWithReLogin } from "../login/loginDialogue.js";
+import { fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
 
 import LiveTableStyle from "./tableStyle.jsx";
 
@@ -74,6 +74,8 @@ function LiveTable(props) {
       new URL(window.location.pathname.substring(window.location.pathname.lastIndexOf("/")) + ".paginate", window.location.origin)
   );
 
+  const globalLoginDisplay = useContext(GlobalLoginContext);
+
   // When new data is added, trigger a new fetch
   useEffect(() => {
     if (updateData){
@@ -98,6 +100,11 @@ function LiveTable(props) {
   // Define the component's behavior
 
   let fetchData = (newPage) => {
+    globalLoginDisplay.setLoginHandler((success) => {
+      success && globalLoginDisplay.dialogClose();
+      success && fetchData(newPage);
+    });
+
     if (fetchStatus.currentFetch) {
       // TODO: abort previous request
     }
@@ -120,7 +127,7 @@ function LiveTable(props) {
       filters["empties"].forEach((value) => {url.searchParams.append("filterempty", value)});
       filters["notempties"].forEach((value) => {url.searchParams.append("filternotempty", value)});
     }
-    let currentFetch = fetchWithReLogin(url, { method: 'GET' }, setFetchDataPending);
+    let currentFetch = fetchWithReLogin(url, { method: 'GET' }, globalLoginDisplay.dialogOpen);
     setFetchStatus(Object.assign({}, fetchStatus, {
       "currentFetch": currentFetch,
       "fetchError": false,
@@ -132,6 +139,7 @@ function LiveTable(props) {
   };
 
   let handleResponse = (json) => {
+    globalLoginDisplay.clearLoginHandler();
     if (+json.req !== fetchStatus.currentRequestNumber) {
       // This is the response for an older request. Discard it, wait for the right one.
       return;
@@ -322,11 +330,6 @@ function LiveTable(props) {
     fetchData(paginationData);
   }
 
-  let handleLogin = (success) => {
-    success && fetchDataPending && fetchData(paginationData);
-    success && setFetchDataPending(false);
-  }
-
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // The rendering code
 
@@ -348,7 +351,6 @@ function LiveTable(props) {
 
   return (
     <React.Fragment>
-      <DialogueLoginContainer isOpen={!disableReLogin && fetchDataPending} handleLogin={handleLogin}/>
       {/*
       // We wrap everything in a Paper for a nice separation, as a Table has no background or border of its own.
       */}
