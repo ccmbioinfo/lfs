@@ -41,6 +41,13 @@ export function fetchWithReLogin(url, fetchArgs, setDisplayLogin) {
     });
 }
 
+export function configureLoginHandler(displayCtx, callingMethod, callingArgs) {
+  displayCtx.setLoginHandler((success) => {
+    success && displayCtx.dialogClose();
+    success && callingMethod(callingArgs);
+  });
+}
+
 class DialogueLoginContainer extends React.Component {
   constructor(props) {
     super(props);

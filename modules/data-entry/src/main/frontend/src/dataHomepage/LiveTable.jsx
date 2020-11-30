@@ -25,7 +25,7 @@ import moment from "moment";
 
 import Filters from "./Filters.jsx";
 import { getEntityIdentifier } from "../themePage/EntityIdentifier.jsx";
-import { fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
+import { configureLoginHandler, fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
 
 import LiveTableStyle from "./tableStyle.jsx";
 
@@ -100,10 +100,7 @@ function LiveTable(props) {
   // Define the component's behavior
 
   let fetchData = (newPage) => {
-    globalLoginDisplay.setLoginHandler((success) => {
-      success && globalLoginDisplay.dialogClose();
-      success && fetchData(newPage);
-    });
+    configureLoginHandler(globalLoginDisplay, fetchData, newPage);
 
     if (fetchStatus.currentFetch) {
       // TODO: abort previous request

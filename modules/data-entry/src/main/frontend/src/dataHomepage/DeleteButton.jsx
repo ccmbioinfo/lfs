@@ -23,7 +23,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton }
 import { Tooltip, Typography, withStyles } from "@material-ui/core";
 import { Delete, Close } from "@material-ui/icons";
 
-import { fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
+import { configureLoginHandler, fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
 import QuestionnaireStyle from "../questionnaire/QuestionnaireStyle.jsx";
 
 /**
@@ -127,10 +127,7 @@ function DeleteButton(props) {
       url.searchParams.set("recursive", true);
     }
 
-    globalLoginDisplay.setLoginHandler((success) => {
-      success && globalLoginDisplay.dialogClose();
-      success && handleDelete();
-    });
+    configureLoginHandler(globalLoginDisplay, handleDelete);
 
     fetchWithReLogin( url, {
       method: 'DELETE',
