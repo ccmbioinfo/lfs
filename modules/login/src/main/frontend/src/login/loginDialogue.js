@@ -23,15 +23,15 @@ import MainLoginComponent from './loginMainComponent';
 
 export const GlobalLoginContext = React.createContext();
 
-export function fetchWithReLogin(url, fetchArgs, setDisplayLogin, loginHandlerFcn, loginHandlerArgs) {
-    configureLoginHandler(setDisplayLogin, loginHandlerFcn, loginHandlerArgs);
+export function fetchWithReLogin(url, fetchArgs, displayLoginCtx, loginHandlerFcn, loginHandlerArgs) {
+    configureLoginHandler(displayLoginCtx, loginHandlerFcn, loginHandlerArgs);
     return new Promise(function(resolve, reject) {
       fetch(url, fetchArgs)
       .then((response) => {
         if (response.status == 401) {
-            setDisplayLogin.dialogOpen();
+            displayLoginCtx.dialogOpen();
         } else if (response.ok && response.url.startsWith(window.location.origin + "/login")) {
-            setDisplayLogin.dialogOpen();
+            displayLoginCtx.dialogOpen();
         } else if (response.ok) {
             resolve(response);
         } else {
@@ -42,9 +42,9 @@ export function fetchWithReLogin(url, fetchArgs, setDisplayLogin, loginHandlerFc
     });
 }
 
-function configureLoginHandler(displayCtx, callingMethod, callingArgs) {
-  displayCtx.setLoginHandler((success) => {
-    success && displayCtx.dialogClose();
+function configureLoginHandler(displayLoginCtx, callingMethod, callingArgs) {
+  displayLoginCtx.setLoginHandler((success) => {
+    success && displayLoginCtx.dialogClose();
     success && callingMethod(callingArgs);
   });
 }
