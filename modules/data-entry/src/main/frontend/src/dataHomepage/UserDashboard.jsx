@@ -126,7 +126,6 @@ function UserDashboard(props) {
                 filters
                 entryType={"Form"}
                 actions={actions}
-                disableReLogin={true}
               />
             </CardContent>
           </Card>

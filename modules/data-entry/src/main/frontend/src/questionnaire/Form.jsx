@@ -87,7 +87,6 @@ function Form (props) {
   let [ selectorDialogOpen, setSelectorDialogOpen ] = useState(false);
   let [ selectorDialogError, setSelectorDialogError ] = useState("");
   let [ changedSubject, setChangedSubject ] = useState();
-  let [ fetchDataPending, setFetchDataPending ] = useState(false);
   let [ saveDataPending, setSaveDataPending ] = useState(false);
   let [ errorCode, setErrorCode ] = useState();
   let [ errorMessage, setErrorMessage ] = useState("");
@@ -281,93 +280,91 @@ function Form (props) {
   pages.length = 0;
 
   return (
-     <React.Fragment>
-       <form action={data?.["@path"]} method="POST" onSubmit={handleSubmit} onChange={()=>setLastSaveStatus(undefined)} key={id} ref={formNode}>
-        <Grid container {...FORM_ENTRY_CONTAINER_PROPS} >
-          <Grid item className={classes.formHeader} xs={12}>
-            { parentDetails && <Typography variant="overline">
-              {parentDetails}
-              <IconButton className={classes.hierarchyEditButton} size="small" onClick={() => {setSelectorDialogOpen(true)}}>
-                <EditIcon fontSize="small" />
-              </IconButton>
-            </Typography> }
-            <Typography variant="h2">
-              {(data?.questionnaire?.title || id || "")}
-              <DeleteButton
-                entryPath={data ? data["@path"] : "/Forms/"+id}
-                entryName={(data?.subject?.identifier || "Subject") + ": " + (data?.questionnaire?.title || id || "")}
-                entryType={data?.questionnaire?.title || "Form"}
-                warning={data ? data["@referenced"] : false}
-                shouldGoBack={true}
-                buttonClass={classes.titleButton}
-              />
-            </Typography>
-            {
-              data && data['jcr:createdBy'] && data['jcr:created'] ?
-              <Typography variant="overline">Entered by {data['jcr:createdBy']} on {moment(data['jcr:created']).format("dddd, MMMM Do YYYY")}</Typography>
-              : ""
-            }
-          </Grid>
-          <FormProvider>
-            <SelectorDialog
-              allowedTypes={parseToArray(data?.['questionnaire']?.['requiredSubjectTypes'])}
-              error={selectorDialogError}
-              open={selectorDialogOpen}
-              onChange={changeSubject}
-              onClose={() => {setSelectorDialogOpen(false)}}
-              onError={setSelectorDialogError}
-              title="Set subject"
-              selectedQuestionnaire={data?.questionnaire}
-            />
-            {changedSubject && data &&
-              <React.Fragment>
-                <input type="hidden" name={`${data["@path"]}/subject`} value={changedSubject["@path"]}></input>
-                <input type="hidden" name={`${data["@path"]}/subject@TypeHint`} value="Reference"></input>
-              </React.Fragment>
-            }
-            {
-              data && Object.entries(data.questionnaire)
-                .filter(([key, value]) => ENTRY_TYPES.includes(value['jcr:primaryType']))
-                .map(([key, entryDefinition]) => {
-                  let pageResult = addPage(entryDefinition);
-                  return <FormEntry
-                    key={key}
-                    entryDefinition={entryDefinition}
-                    path={"."}
-                    depth={0}
-                    existingAnswers={data}
-                    keyProp={key}
-                    classes={classes}
-                    onChange={()=>setLastSaveStatus(undefined)}
-                    visibleCallback={pageResult.callback}
-                    pageActive={pageResult.page.visible}
-                  />
-                })
-            }
-          </FormProvider>
-          <Grid item xs={12} className={classes.formFooter}>
-            <FormPagination
-              lastPage={lastValidPage}
-              activePage={activePage}
-              saveInProgress={saveInProgress}
-              lastSaveStatus={lastSaveStatus}
-              handlePageChange={handlePageChange}
-            />
-          </Grid>
-        </Grid>
-        <Dialog open={errorDialogDisplayed} onClose={closeErrorDialog}>
-          <DialogTitle disableTypography>
-            <Typography variant="h6" color="error" className={classes.dialogTitle}>Failed to save</Typography>
-            <IconButton onClick={closeErrorDialog} className={classes.closeButton}>
-              <CloseIcon />
+     <form action={data?.["@path"]} method="POST" onSubmit={handleSubmit} onChange={()=>setLastSaveStatus(undefined)} key={id} ref={formNode}>
+      <Grid container {...FORM_ENTRY_CONTAINER_PROPS} >
+        <Grid item className={classes.formHeader} xs={12}>
+          { parentDetails && <Typography variant="overline">
+            {parentDetails}
+            <IconButton className={classes.hierarchyEditButton} size="small" onClick={() => {setSelectorDialogOpen(true)}}>
+              <EditIcon fontSize="small" />
             </IconButton>
-          </DialogTitle>
-          <DialogContent>
-              <Typography variant="body1">Server responded with response code {errorCode}:<br />{errorMessage}</Typography>
-          </DialogContent>
-        </Dialog>
-      </form>
-    </React.Fragment>
+          </Typography> }
+          <Typography variant="h2">
+            {(data?.questionnaire?.title || id || "")}
+            <DeleteButton
+              entryPath={data ? data["@path"] : "/Forms/"+id}
+              entryName={(data?.subject?.identifier || "Subject") + ": " + (data?.questionnaire?.title || id || "")}
+              entryType={data?.questionnaire?.title || "Form"}
+              warning={data ? data["@referenced"] : false}
+              shouldGoBack={true}
+              buttonClass={classes.titleButton}
+            />
+          </Typography>
+          {
+            data && data['jcr:createdBy'] && data['jcr:created'] ?
+            <Typography variant="overline">Entered by {data['jcr:createdBy']} on {moment(data['jcr:created']).format("dddd, MMMM Do YYYY")}</Typography>
+            : ""
+          }
+        </Grid>
+        <FormProvider>
+          <SelectorDialog
+            allowedTypes={parseToArray(data?.['questionnaire']?.['requiredSubjectTypes'])}
+            error={selectorDialogError}
+            open={selectorDialogOpen}
+            onChange={changeSubject}
+            onClose={() => {setSelectorDialogOpen(false)}}
+            onError={setSelectorDialogError}
+            title="Set subject"
+            selectedQuestionnaire={data?.questionnaire}
+          />
+          {changedSubject && data &&
+            <React.Fragment>
+              <input type="hidden" name={`${data["@path"]}/subject`} value={changedSubject["@path"]}></input>
+              <input type="hidden" name={`${data["@path"]}/subject@TypeHint`} value="Reference"></input>
+            </React.Fragment>
+          }
+          {
+            data && Object.entries(data.questionnaire)
+              .filter(([key, value]) => ENTRY_TYPES.includes(value['jcr:primaryType']))
+              .map(([key, entryDefinition]) => {
+                let pageResult = addPage(entryDefinition);
+                return <FormEntry
+                  key={key}
+                  entryDefinition={entryDefinition}
+                  path={"."}
+                  depth={0}
+                  existingAnswers={data}
+                  keyProp={key}
+                  classes={classes}
+                  onChange={()=>setLastSaveStatus(undefined)}
+                  visibleCallback={pageResult.callback}
+                  pageActive={pageResult.page.visible}
+                />
+              })
+          }
+        </FormProvider>
+        <Grid item xs={12} className={classes.formFooter}>
+          <FormPagination
+            lastPage={lastValidPage}
+            activePage={activePage}
+            saveInProgress={saveInProgress}
+            lastSaveStatus={lastSaveStatus}
+            handlePageChange={handlePageChange}
+          />
+        </Grid>
+      </Grid>
+      <Dialog open={errorDialogDisplayed} onClose={closeErrorDialog}>
+        <DialogTitle disableTypography>
+          <Typography variant="h6" color="error" className={classes.dialogTitle}>Failed to save</Typography>
+          <IconButton onClick={closeErrorDialog} className={classes.closeButton}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+            <Typography variant="body1">Server responded with response code {errorCode}:<br />{errorMessage}</Typography>
+        </DialogContent>
+      </Dialog>
+     </form>
   );
 };
 

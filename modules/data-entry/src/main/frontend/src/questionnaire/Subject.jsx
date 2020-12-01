@@ -189,24 +189,22 @@ function SubjectContainer(props) {
   }
 
   return (
-    <React.Fragment>
-      <Grid container spacing={3}>
-        { data &&
-        <SubjectMember classes={classes} id={id} level={currentLevel} data={data} maxDisplayed={maxDisplayed}/>
-        }
-        {relatedSubjects ?
-          (<Grid item xs={12} className={classes.subjectContainer}>
-            {relatedSubjects.map( (subject, i) => {
-              // Render component again for each related subject
-              return(
-                <SubjectContainer key={i} classes={classes} id={subject["@name"]} level={currentLevel+1} maxDisplayed={maxDisplayed}/>
-              )
-            })}
-          </Grid>
-          ) : ""
-        }
-      </Grid>
-    </React.Fragment>
+    <Grid container spacing={3}>
+      { data &&
+      <SubjectMember classes={classes} id={id} level={currentLevel} data={data} maxDisplayed={maxDisplayed}/>
+      }
+      {relatedSubjects ?
+        (<Grid item xs={12} className={classes.subjectContainer}>
+          {relatedSubjects.map( (subject, i) => {
+            // Render component again for each related subject
+            return(
+              <SubjectContainer key={i} classes={classes} id={subject["@name"]} level={currentLevel+1} maxDisplayed={maxDisplayed}/>
+            )
+          })}
+        </Grid>
+        ) : ""
+      }
+    </Grid>
   );
 }
 

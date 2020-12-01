@@ -16,7 +16,7 @@
 //  specific language governing permissions and limitations
 //  under the License.
 //
-import React, { useContext } from 'react';
+import React from 'react';
 import { Dialog } from '@material-ui/core';
 
 import MainLoginComponent from './loginMainComponent';
