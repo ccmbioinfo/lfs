@@ -200,8 +200,7 @@ function Form (props) {
     saveData(event);
   }
 
-  // If the data has not yet been fetched, return an in-progress symbol,
-  // unless we are prompting for login credentials
+  // If the data has not yet been fetched, return an in-progress symbol
   if (!data) {
     fetchData();
     return (
