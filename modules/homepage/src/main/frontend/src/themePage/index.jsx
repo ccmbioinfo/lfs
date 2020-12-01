@@ -114,6 +114,9 @@ class Main extends React.Component {
             if (this.state.loginHandler) {
               this.setState({ loginHandler: undefined });
             }
+          },
+          getDialogOpenStatus: () => {
+            return this.state.loginDialogOpen;
           }
         }}
       >

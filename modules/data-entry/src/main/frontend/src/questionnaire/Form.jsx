@@ -41,7 +41,7 @@ import moment from "moment";
 import { getHierarchy } from "./Subject";
 import { SelectorDialog, parseToArray } from "./SubjectSelector";
 import { FormProvider } from "./FormContext";
-import { fetchWithReLogin, GlobalLoginContext, configureLoginHandler } from "../login/loginDialogue.js";
+import { fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
 import DeleteButton from "../dataHomepage/DeleteButton";
 import FormPagination from "./FormPagination";
 
@@ -107,9 +107,7 @@ function Form (props) {
   // and all the existing answers.
   // Once the data arrives from the server, it will be stored in the `data` state variable.
   let fetchData = () => {
-    configureLoginHandler(globalLoginDisplay, fetchData);
-
-    fetchWithReLogin(`/Forms/${id}.deep.json`, { method: 'GET' }, globalLoginDisplay)
+    fetchWithReLogin(`/Forms/${id}.deep.json`, { method: 'GET' }, globalLoginDisplay, fetchData)
       .then((response) => response.ok ? response.json() : Promise.reject(response))
       .then(handleResponse)
       .catch(handleFetchError);
@@ -136,8 +134,6 @@ function Form (props) {
 
     setSaveInProgress(true);
 
-    configureLoginHandler(globalLoginDisplay, saveData);
-
     // currentTarget is the element on which the event listener was placed and invoked, thus the <form> element
     let data = new FormData(event ? event.currentTarget : formNode.current);
     fetchWithReLogin(`/Forms/${id}`, {
@@ -148,7 +144,7 @@ function Form (props) {
         Authorization: "Basic " + btoa(":")
       }
     },
-    globalLoginDisplay).then((response) => {
+    globalLoginDisplay, saveData).then((response) => {
       globalLoginDisplay.clearLoginHandler();
       if (response.ok) {
         setLastSaveStatus(true);

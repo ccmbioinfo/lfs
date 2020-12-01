@@ -25,7 +25,7 @@ import moment from "moment";
 
 import Filters from "./Filters.jsx";
 import { getEntityIdentifier } from "../themePage/EntityIdentifier.jsx";
-import { configureLoginHandler, fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
+import { fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
 
 import LiveTableStyle from "./tableStyle.jsx";
 
@@ -100,8 +100,6 @@ function LiveTable(props) {
   // Define the component's behavior
 
   let fetchData = (newPage) => {
-    configureLoginHandler(globalLoginDisplay, fetchData, newPage);
-
     if (fetchStatus.currentFetch) {
       // TODO: abort previous request
     }
@@ -124,7 +122,7 @@ function LiveTable(props) {
       filters["empties"].forEach((value) => {url.searchParams.append("filterempty", value)});
       filters["notempties"].forEach((value) => {url.searchParams.append("filternotempty", value)});
     }
-    let currentFetch = fetchWithReLogin(url, { method: 'GET' }, globalLoginDisplay);
+    let currentFetch = fetchWithReLogin(url, { method: 'GET' }, globalLoginDisplay, fetchData, newPage);
     setFetchStatus(Object.assign({}, fetchStatus, {
       "currentFetch": currentFetch,
       "fetchError": false,

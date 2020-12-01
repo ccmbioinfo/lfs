@@ -23,7 +23,7 @@ import PropTypes from "prop-types";
 import moment from "moment";
 import QuestionnaireStyle from "./QuestionnaireStyle.jsx";
 import NewFormDialog from "../dataHomepage/NewFormDialog";
-import { configureLoginHandler, fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
+import { fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
 
 import {
   CircularProgress,
@@ -133,9 +133,7 @@ function SubjectContainer(props) {
   // such as authorship and versioning information.
   // Once the data arrives from the server, it will be stored in the `data` state variable.
   let fetchData = () => {
-    configureLoginHandler(globalLoginDisplay, fetchData);
-
-    fetchWithReLogin(`/Subjects/${id}.deep.json`, { method: 'GET' }, globalLoginDisplay)
+    fetchWithReLogin(`/Subjects/${id}.deep.json`, { method: 'GET' }, globalLoginDisplay, fetchData)
       .then((response) => response.ok ? response.json() : Promise.reject(response))
       .then(handleResponse)
       .catch(handleError);

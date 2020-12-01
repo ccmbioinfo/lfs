@@ -25,7 +25,7 @@ import { Button, Card, CardContent, CardHeader, Grid, Link, Typography, withStyl
 import NewFormDialog from "./NewFormDialog.jsx";
 import DeleteButton from "./DeleteButton.jsx";
 import { getEntityIdentifier } from "../themePage/EntityIdentifier.jsx";
-import { configureLoginHandler, fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
+import { fetchWithReLogin, GlobalLoginContext } from "../login/loginDialogue.js";
 
 // Component that renders the user's dashboard, with one LiveTable per questionnaire
 // visible by the user. Each LiveTable contains all forms that use the given
@@ -68,10 +68,8 @@ function UserDashboard(props) {
   let initialize = () => {
     setInitialized(true);
 
-    configureLoginHandler(globalLoginDisplay, initialize);
-
     // Fetch the questionnaires
-    fetchWithReLogin("/query?query=select * from [lfs:Questionnaire]", {method: 'GET'}, globalLoginDisplay)
+    fetchWithReLogin("/query?query=select * from [lfs:Questionnaire]", {method: 'GET'}, globalLoginDisplay, initialize)
       .then((response) => response.ok ? response.json() : Promise.reject(response))
       .then((response) => {
         globalLoginDisplay.clearLoginHandler();
