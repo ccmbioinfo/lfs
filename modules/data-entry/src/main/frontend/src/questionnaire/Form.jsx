@@ -279,7 +279,7 @@ function Form (props) {
   pages.length = 0;
 
   return (
-     <form action={data?.["@path"]} method="POST" onSubmit={handleSubmit} onChange={()=>setLastSaveStatus(undefined)} key={id} ref={formNode}>
+    <form action={data?.["@path"]} method="POST" onSubmit={handleSubmit} onChange={()=>setLastSaveStatus(undefined)} key={id} ref={formNode}>
       <Grid container {...FORM_ENTRY_CONTAINER_PROPS} >
         <Grid item className={classes.formHeader} xs={12}>
           { parentDetails && <Typography variant="overline">
@@ -315,7 +315,7 @@ function Form (props) {
             onError={setSelectorDialogError}
             title="Set subject"
             selectedQuestionnaire={data?.questionnaire}
-          />
+            />
           {changedSubject && data &&
             <React.Fragment>
               <input type="hidden" name={`${data["@path"]}/subject`} value={changedSubject["@path"]}></input>
@@ -349,7 +349,7 @@ function Form (props) {
             saveInProgress={saveInProgress}
             lastSaveStatus={lastSaveStatus}
             handlePageChange={handlePageChange}
-          />
+            />
         </Grid>
       </Grid>
       <Dialog open={errorDialogDisplayed} onClose={closeErrorDialog}>
@@ -363,7 +363,7 @@ function Form (props) {
             <Typography variant="body1">Server responded with response code {errorCode}:<br />{errorMessage}</Typography>
         </DialogContent>
       </Dialog>
-     </form>
+    </form>
   );
 };
 
