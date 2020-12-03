@@ -117,7 +117,7 @@ function Form (props) {
     setData(json);
     setPaginationEnabled(!!json?.['questionnaire']?.['paginate']);
     setPages([]);
-    globalLoginDisplay.clearLoginHandler();
+    //globalLoginDisplay.clearLoginHandler();
   };
 
   // Callback method for the `fetchData` method, invoked when the request failed.
@@ -144,7 +144,7 @@ function Form (props) {
       }
     },
     globalLoginDisplay, saveData).then((response) => {
-      globalLoginDisplay.clearLoginHandler();
+      //globalLoginDisplay.clearLoginHandler();
       if (response.ok) {
         setLastSaveStatus(true);
       } else if (response.status === 500) {

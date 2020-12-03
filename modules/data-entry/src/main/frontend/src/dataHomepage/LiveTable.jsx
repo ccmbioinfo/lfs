@@ -133,7 +133,7 @@ function LiveTable(props) {
   };
 
   let handleResponse = (json) => {
-    globalLoginDisplay.clearLoginHandler();
+    //globalLoginDisplay.clearLoginHandler();
     if (+json.req !== fetchStatus.currentRequestNumber) {
       // This is the response for an older request. Discard it, wait for the right one.
       return;

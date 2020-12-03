@@ -141,7 +141,7 @@ function SubjectContainer(props) {
 
   // Callback method for the `fetchData` method, invoked when the data successfully arrived from the server.
   let handleResponse = (json) => {
-    globalLoginDisplay.clearLoginHandler();
+    //globalLoginDisplay.clearLoginHandler();
     if (currentLevel == 0) {
       // sends the data to the parent component
       getSubject(json);

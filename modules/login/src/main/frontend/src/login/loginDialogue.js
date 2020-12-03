@@ -33,6 +33,7 @@ export function fetchWithReLogin(url, fetchArgs, displayLoginCtx, loginHandlerFc
         } else if (response.ok && response.url.startsWith(window.location.origin + "/login")) {
             displayLoginCtx.dialogOpen();
         } else if (response.ok) {
+            displayLoginCtx.clearLoginHandler();
             resolve(response);
         } else {
             reject(response);

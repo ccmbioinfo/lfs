@@ -72,7 +72,7 @@ function UserDashboard(props) {
     fetchWithReLogin("/query?query=select * from [lfs:Questionnaire]", {method: 'GET'}, globalLoginDisplay, initialize)
       .then((response) => response.ok ? response.json() : Promise.reject(response))
       .then((response) => {
-        globalLoginDisplay.clearLoginHandler();
+        //globalLoginDisplay.clearLoginHandler();
         if (response.totalrows == 0) {
           setError("Access to data is pending the approval of your account");
         }
