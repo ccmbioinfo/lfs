@@ -38,10 +38,10 @@ const MAX_RESULTS = 10;
 // Component that renders a search bar for vocabulary terms.
 //
 // Required arguments:
-//  clearOnClick: Whether selecting an option will clear the search bar
+//  clearOnClick: Whether selecting an option will clear the search bar (default: true)
 //  onClick: Callback when the user clicks on this element
 //  onInputFocus: Callback when the input is focused on
-//  focusAfterSelecting: focus after selecting
+//  focusAfterSelecting: focus after selecting (default: true)
 //
 // Optional arguments:
 //  disabled: Boolean representing whether or not this element is disabled
@@ -481,7 +481,7 @@ VocabularyQuery.propTypes = {
     onClick: PropTypes.func.isRequired,
     focusAfterSelecting: PropTypes.bool.isRequired,
     defaultValue: PropTypes.string,
-    disabled: PropTypes.string,
+    disabled: PropTypes.bool,
     label: PropTypes.string,
     overrideText: PropTypes.string,
     defaultValue: PropTypes.string,
