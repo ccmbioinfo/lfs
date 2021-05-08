@@ -77,6 +77,7 @@ function VocabularyQuery(props) {
   const [infoDefinition, setInfoDefinition] = useState("");
   const [infoAlsoKnownAs, setInfoAlsoKnownAs] = useState([]);
   const [infoTypeOf, setInfoTypeOf] = useState([]);
+  const [infoAboveBackground, setInfoAboveBackground] = useState(false);
   const [infoAnchor, setInfoAnchor] = useState(null);
 
   // Information about the vocabulary
@@ -316,6 +317,7 @@ function VocabularyQuery(props) {
       setInfoTypeOf(typeOf);
       setInfoAnchor(buttonRefs[data["identifier"]]);
       setTermInfoVisible(true);
+      setInfoAboveBackground(browserOpened);
     } else {
       logError("Failed to search vocabulary term");
     }
@@ -342,6 +344,7 @@ function VocabularyQuery(props) {
     setBrowserOpened(false);
     setSuggestionsVisible(false);
     setTermInfoVisible(false);
+    setInfoAboveBackground(false);
   }
 
   let changeBrowseTerm = (id, path) => {
@@ -441,6 +444,7 @@ function VocabularyQuery(props) {
           term={{name: infoName, id: infoID, definition: infoDefinition, alsoKnownAs: infoAlsoKnownAs, typeOf: infoTypeOf}}
           openDialog={openDialog}
           browserOpened={browserOpened}
+          infoAboveBackground={infoAboveBackground}
         />
         { /* Browse dialog box */}
         <VocabularyBrowser

@@ -27,7 +27,7 @@ import QueryStyle from "./queryStyle.jsx";
 //
 function InfoBox(props) {
   const { termInfoVisible, anchorEl, infoRef, menuPopperRef, vocabulary, closeInfo,
-    term, openDialog, browserOpened, classes } = props;
+    term, openDialog, browserOpened, infoAboveBackground, classes } = props;
 
   let clickAwayInfo = (event) => {
     if (menuPopperRef?.current?.contains(event.target)
@@ -47,7 +47,7 @@ function InfoBox(props) {
       className={
         classNames({ [classes.popperClose]: !open })
         + " " + classes.popperNav
-        + " " + (browserOpened ? classes.infoAboveBackdrop : classes.popperInfoOnTop)
+        + " " + (infoAboveBackground ? classes.infoAboveBackdrop : classes.popperInfoOnTop)
       }
       ref={infoRef}
       modifiers={{
