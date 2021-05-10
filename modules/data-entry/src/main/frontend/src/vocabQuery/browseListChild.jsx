@@ -174,7 +174,7 @@ function ListChild(props) {
         )
         :
         ( expands ?
-          expandAction(<ArrowRight/>, "No sub-categories")
+          expandAction(<ArrowRight/>, "No sub-categories", () => {})
           :
           expandAction(<More/>, "Show parent categories", () => loadTerm(id, path))
         )

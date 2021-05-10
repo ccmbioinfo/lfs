@@ -16,32 +16,56 @@
 //  specific language governing permissions and limitations
 //  under the License.
 //
-import React from "react";
+import React, { useRef, useState } from "react";
 import classNames from "classnames";
 import { withStyles, Avatar, Button, Card, CardActions, CardContent, CardHeader, ClickAwayListener, Grow, IconButton, Link, Popper, Tooltip, Typography } from "@material-ui/core";
 import CloseIcon from '@material-ui/icons/Close';
 
+import VocabularyBrowser from "./browse.jsx";
 import QueryStyle from "./queryStyle.jsx";
 
 // Component that renders a dialog with term info for a single vocabulary term.
 //
 function InfoBox(props) {
-  const { termInfoVisible, anchorEl, infoRef, menuPopperRef, vocabulary, closeInfo,
-    term, openDialog, browserOpened, infoAboveBackground, classes } = props;
+  const { open, anchorEl, infoRef, menuPopperRef, vocabulary, onClose, closeBrowser, term, logError,
+    registerInfoButton, getInfo, browserRef, classes } = props;
+
+  const [infoAboveBackground, setInfoAboveBackground] = useState(true);
+  const [browseID, setBrowseID] = useState(term["identifier"] || "");
+  const [browsePath, setBrowsePath] = useState(term["@path"] || "");
+  const [browserOpened, setBrowserOpened] = useState(false);
+  const [alsoKnownAs, setAlsoKnownAs] = useState(term["synonyms"] || term["has_exact_synonym"] || []);
+  const [typeOf, setTypeOf] = useState(("parents" in term) ?
+													        term["parents"].map(item =>
+													          item["label"] || item["name"] || item["identifier"] || item["id"]
+													        ).filter(i => i)
+													       : []);
 
   let clickAwayInfo = (event) => {
     if (menuPopperRef?.current?.contains(event.target)
-      || infoRef?.current?.contains(event.target)) {
+      || infoRef?.current?.contains(event.target)
+      || browserRef?.current?.contains(event.target)) {
       return;
     }
 
-    closeInfo();
+    setBrowserOpened(false);
+    closeBrowser();
   }
 
-  return (
+  let openBrowser = () => {
+    setInfoAboveBackground(false);
+    setBrowserOpened(true);
+  }
+
+  let changeBrowseTerm = (id, path) => {
+    setBrowseID(id);
+    setBrowsePath(path);
+  }
+
+  return ( <>
     <Popper
       placement="right"
-      open={termInfoVisible}
+      open={open}
       anchorEl={anchorEl}
       transition
       className={
@@ -90,22 +114,22 @@ function InfoBox(props) {
                   </Link>
                 }
                 action={
-                  <IconButton aria-label="close" onClick={closeInfo}>
+                  <IconButton aria-label="close" onClick={() => {event.stopPropagation(); onClose()}}>
                     <CloseIcon />
                   </IconButton>
                 }
-                title={term.name}
-                subheader={term.id}
+                title={term["label"]}
+                subheader={term["identifier"]}
                 titleTypographyProps={{variant: 'h5'}}
               />
               <CardContent className={classes.infoPaper}>
                 <div className={classes.infoSection}>
-                  <Typography className={classes.infoDefinition}>{term.definition}</Typography>
+                  <Typography className={classes.infoDefinition}>{term["def"] || term["description"] || term["definition"]}</Typography>
                 </div>
-                  {term.alsoKnownAs.length > 0 && (
+                  {alsoKnownAs.length > 0 && (
                     <div className={classes.infoSection}>
                       <Typography variant="h6" className={classes.infoHeader}>Also known as</Typography>
-                      {term.alsoKnownAs.map((name, index) => {
+                      {alsoKnownAs.map((name, index) => {
                         return (<Typography className={classes.infoAlsoKnownAs} key={index}>
                                   {name}
                                 </Typography>
@@ -113,10 +137,10 @@ function InfoBox(props) {
                       })}
                     </div>
                   )}
-                  {term.typeOf.length > 0 && (
+                  {typeOf.length > 0 && (
                     <div className={classes.infoSection}>
                       <Typography variant="h6" className={classes.infoHeader}>Is a type of</Typography>
-                      {term.typeOf.map((name, index) => {
+                      {typeOf.map((name, index) => {
                         return (<Typography className={classes.typeOf} key={index}>
                                   {name}
                                 </Typography>
@@ -125,9 +149,8 @@ function InfoBox(props) {
                     </div>
                   )}
                   </CardContent>
-                  {!browserOpened &&
-                    <CardActions className={classes.infoPaper}>
-                      <Button size="small" onClick={openDialog} variant='contained' color='primary'>Learn more</Button>
+                  { <CardActions className={classes.infoPaper}>
+                      <Button size="small" disabled={browserOpened} onClick={openBrowser} variant='contained' color='primary'>Learn more</Button>
                     </CardActions>
                   }
              </div></ClickAwayListener>
@@ -135,6 +158,21 @@ function InfoBox(props) {
         </Grow>
       )}
     </Popper>
+    { /* Browse dialog box */}
+    { browseID && browserOpened &&
+      <VocabularyBrowser
+        ref={browserRef}
+        open={browserOpened}
+        id={browseID}
+        path={browsePath}
+        changeTerm={changeBrowseTerm}
+        onClose={closeBrowser}
+        onError={logError}
+        registerInfo={registerInfoButton}
+        getInfo={getInfo}
+      />
+    }
+  </>
   );
 }
 
